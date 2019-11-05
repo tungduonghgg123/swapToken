@@ -1,9 +1,9 @@
-pragma solidity >=0.4.22 <0.6.0;
+pragma solidity ^0.4.17;
 import './token.sol';
 
 contract Reserve {
     
-    address payable owner;
+    address owner;
     address public thisAddr = address(this);
     TestToken token;
 
@@ -13,7 +13,7 @@ contract Reserve {
     // uint buyRate = 900000000000000000;
     // uint sellRate = 1000000000000000000;
     
-    constructor(address tokenAddr) public {
+    function Reserve(address tokenAddr) public {
         
         owner = msg.sender;
         token = TestToken(tokenAddr);
@@ -35,7 +35,6 @@ contract Reserve {
                 
                 return buyRate;
             
-                
             }
             else return 0;
         } else {
@@ -66,9 +65,9 @@ contract Reserve {
         }
     }
     
-    function withdraw(uint amount) isOwner public {
+    function withdraw(uint amount, address destAddress) isOwner public {
         if(address(this).balance >= amount) {
-            owner.transfer(amount);
+            destAddress.transfer(amount);
         }
     } 
     
@@ -90,11 +89,10 @@ contract Reserve {
             require( token.allowance( msg.sender, thisAddr ) == srcAmount );
             token.transferFrom(msg.sender, thisAddr, srcAmount);
             
-            uint destAmount = srcAmount * sellRate / fixedUnit;
+            destAmount = srcAmount * sellRate / fixedUnit;
             require(destAmount <= thisAddr.balance);
             
-            address payable reciever = address(uint160(from));
-            reciever.transfer(destAmount);
+            from.transfer(destAmount);
             return destAmount;
 
         }
@@ -102,8 +100,7 @@ contract Reserve {
     
     modifier isOwner() {
         require(
-            msg.sender == owner,
-            "you are not permitted to do this"
+            msg.sender == owner
         );
         _;
     }

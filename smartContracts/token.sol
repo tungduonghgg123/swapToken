@@ -2,7 +2,7 @@
  *Submitted for verification at Etherscan.io on 2018-05-21
 */
 
-pragma solidity >=0.4.22 <0.6.0;
+pragma solidity ^0.4.17;
 
 // File: ../../ropsten/smart-contracts/contracts/mockContracts/TestToken.sol
 
@@ -115,7 +115,7 @@ contract BasicToken is ERC20Basic {
     function transfer(address _to, uint _value)  public onlyPayloadSize(2 * 32) returns(bool) {
         balances[msg.sender] = balances[msg.sender].sub(_value);
         balances[_to] = balances[_to].add(_value);
-        emit  Transfer(msg.sender, _to, _value);
+        Transfer(msg.sender, _to, _value);
         return true;
     }
 
@@ -148,14 +148,14 @@ contract StandardToken is BasicToken, ERC20 {
         balances[_to] = balances[_to].add(_value);
         balances[_from] = balances[_from].sub(_value);
         allowed[_from][msg.sender] = _allowance.sub(_value);
-        emit Transfer(_from, _to, _value);
+        Transfer(_from, _to, _value);
 
         return true;
     }
 
     function approve(address _spender, uint _value) public returns(bool){
         allowed[msg.sender][_spender] = _value;
-        emit Approval(msg.sender, _spender, _value);
+        Approval(msg.sender, _spender, _value);
 
         return true;
     }
@@ -179,9 +179,9 @@ contract TestToken is StandardToken {
     string public name = "Test";
     string public symbol = "TST";
     uint public decimals = 18;
-    uint public INITIAL_SUPPLY = 10**(20);
+    uint public INITIAL_SUPPLY = 10**(50+18);
 
-    constructor (string memory _name, string memory _symbol, uint _decimals) public {
+    function TestToken (string memory _name, string memory _symbol, uint _decimals) public {
         totalSupply = INITIAL_SUPPLY;
         balances[msg.sender] = INITIAL_SUPPLY;
         name = _name;
@@ -194,8 +194,8 @@ contract TestToken is StandardToken {
     function burn(uint _value) public returns (bool) {
         balances[msg.sender] = balances[msg.sender].sub(_value);
         totalSupply = totalSupply.sub(_value);
-        emit Burn(msg.sender, _value);
-        emit Transfer(msg.sender, address(0x0), _value);
+        Burn(msg.sender, _value);
+        Transfer(msg.sender, address(0x0), _value);
         return true;
     }
 

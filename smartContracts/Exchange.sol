@@ -1,4 +1,4 @@
-pragma solidity >=0.4.22 <0.6.0;
+pragma solidity ^0.4.17;
 import './Reserve.sol';
 import './token.sol';
 
@@ -6,21 +6,18 @@ contract Exchange {
     
     address nativeToken = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     address thisAddr = address(this);
-    address payable owner;
+    address owner;
     mapping (address => Reserve) reserves;
     mapping (address => bool) reserved;
     uint fixedUnit = 10**18;
 
-    constructor() public {
+    function Exchange() public {
         
         owner = msg.sender;
         reserved[nativeToken] = true;
-        // addReserve(0xCBbe6ec46746218A5beD5b336AB86a0A22804d39, 0xB87213121FB89CbD8B877Cb1Bb3FF84dD2869cfA);
-        // addReserve(0xe90f4F8aeBa3AdE774CaC94245792085a451bC8E, 0x100eeE74459CB95583212869f9c0304e7cE11EAA);
-        //Ropsten
-        // addReserve(0x8B24Ab255016Fc8d337da7df730C7D7FC8d8102C, 0x39Ab408c5eB94cE03DB1C9F2EEa9A1a5083BE1c3);
+
     }
-    function addReserve(address payable _reserve, address token) isOwner public {
+    function addReserve(address _reserve, address token) isOwner public {
         
         require(!reserved[token]);
         Reserve reserve = Reserve(_reserve);
@@ -71,11 +68,11 @@ contract Exchange {
             
         } else {
             // phase 1, sell token
-            TestToken token = TestToken(srcToken);
+            token = TestToken(srcToken);
             require( token.allowance( msg.sender, thisAddr ) == srcAmount );
             token.transferFrom( msg.sender, thisAddr, srcAmount );
             
-            Reserve srcReserve = reserves[srcToken];
+            srcReserve = reserves[srcToken];
             token.approve( srcReserve.thisAddr(), srcAmount );
             
             uint ETHrecieved = srcReserve.exchange( false, srcAmount, thisAddr );
@@ -89,8 +86,7 @@ contract Exchange {
 
     modifier isOwner() {
         require(
-            msg.sender == owner,
-            "you are not permitted to do this"
+            msg.sender == owner
         );
         _;
     }
