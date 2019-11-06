@@ -20,15 +20,6 @@ const EnvConfig = {
       "type": "function"
     },
     {
-      "constant": false,
-      "inputs": [],
-      "name": "removeReserve",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
       "constant": true,
       "inputs": [
         {
@@ -89,7 +80,8 @@ const EnvConfig = {
       "type": "fallback"
     }
   ],
-  EXCHANGE_CONTRACT_ADDRESS: '0xb25127b48aC2e0FF8ce98E149E964C984272A1e9',
+  EXCHANGE_CONTRACT_ADDRESS: '0x4ab67F9769Cf3Ab3D0c28790A231EC50dd269516',
+  // EXCHANGE_CONTRACT_ADDRESS: '0xb25127b48aC2e0FF8ce98E149E964C984272A1e9',
   SUPPORTTED_TOKENS: [{
     "name": 'tomo',
     "symbol": 'TOMO',

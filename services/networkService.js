@@ -1,6 +1,6 @@
 import { getWeb3Instance, getTokenContract, getExchangeContract } from './web3Service';
 import EnvConfig from "../configs/env";
-
+const web3 = getWeb3Instance()
 const tokens = EnvConfig.SUPPORTTED_TOKENS;
 const token2contract = new Map();
 tokens.forEach(({address}) => {
@@ -26,10 +26,13 @@ export function getAllowance(srcAddress, address, spender) {
 
 export async function getExchangeRate(srcAddress, destAddress, srcAmount) {
   /*TODO: Get Exchange Rate from Smart Contract*/
-  console.log(srcAddress, destAddress, srcAmount)
-  const exchangeRate = await exchangeContract.methods.getExchangeRate(srcAddress, destAddress, srcAmount ).call()
-
-  console.log(exchangeRate)
+    return new Promise((resolve, reject) => {
+        exchangeContract.methods.getExchangeRate(srcAddress, destAddress, srcAmount).call().then((result) => {
+            resolve(result)
+        }, (error) => {
+            reject(error);
+        })
+    })
 }
 
 export async function getTokenBalances(tokens, address) {

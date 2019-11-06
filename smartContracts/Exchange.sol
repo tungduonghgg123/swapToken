@@ -26,10 +26,8 @@ contract Exchange {
         
     }
 
-    function removeReserve() isOwner public {
-        //TODO
-    }
     function getExchangeRate(address srcToken, address destToken, uint srcAmount) public view returns (uint) {
+        require(srcAmount > 0);
         require(reserved[srcToken] && reserved[destToken]);
         if(srcToken == nativeToken) {
             return reserves[destToken].getExchangeRate(true, srcAmount);
@@ -47,7 +45,7 @@ contract Exchange {
     }
 
     function exchange(address srcToken , address destToken, uint srcAmount) payable public {
-            
+        require(srcAmount > 0);
         require(reserved[srcToken] && reserved[destToken]);
         
         if(srcToken == nativeToken) {
