@@ -26,12 +26,17 @@
         <div class="input-group">
           <div class="dropdown">
             <div class="dropdown__trigger">
-              <span id="from-token">ETH</span>
+              <span id="from-token"></span>
               <div class="dropdown__triangle"></div>
             </div>
             <div class="dropdown__content" id="dropdown__content__from" >
-              <div class="dropdown__item">ETH</div>
-              <div class="dropdown__item">KNC</div>
+              <section class="tokens">
+              </section>
+              <script id="candidateTemplate" type="text/x-handlebars-template">
+                {{#each this}}
+                <div class="dropdown__item">{{symbol}}</div>
+                {{/each}}
+              </script>
             </div>
           </div>  
           <input class="input-item" id="swap-source-amount" type="text" placeholder="0"/>
@@ -45,12 +50,12 @@
         <div class="input-group">
           <div class="dropdown">
             <div class="dropdown__trigger">
-              <span id="to-token">KNC</span>
+              <span id="to-token"></span>
               <div class="dropdown__triangle"></div>
             </div>
             <div class="dropdown__content" id="dropdown__content__to">
-              <div class="dropdown__item">ETH</div>
-              <div class="dropdown__item">KNC</div>
+              <section class="tokens">
+              </section>
             </div>
           </div>
           <div class="input-placeholder">0</div>
