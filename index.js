@@ -37,12 +37,45 @@ function fetchTokenSymbol() {
   $('#from-token').text(tokens[0].symbol);
   $('#to-token').text(tokens[1].symbol);
 }
+function getSymbol(source) {
+  switch (source) {
+    case 'to':
+      return $('#to-token').text();
+    case 'from':
+      return $('#from-token').text();
+  }
+}
+function getSourceAmount() {
+  return $('#swap-source-amount').val();
+}
 async function showExchangeRate(amount) {
+  function denyService(message) {
+    message?$('.swap__rate').text(message) : $('.swap__rate').text("We can not swap that amount!")
+    $('.input-placeholder').text(0)
+  }
+  if(getSymbol('from') == getSymbol('to')) {
+    denyService("Please choose a different destination token. ")
+    return;
+  }
   // get token address
-  const from = tokens.find(token => token.symbol == $('#from-token').text()).address
-  const to = tokens.find(token => token.symbol == $('#to-token').text()).address
+  const from = tokens.find(token => token.symbol == getSymbol('from')).address
+  const to = tokens.find(token => token.symbol == getSymbol('to')).address
   // get amount
-  return getExchangeRate(from, to, amount)
+  getExchangeRate(from, to, (amount * 10 ** 18).toString())
+  .then((result) => {
+    if (result == 0)
+      denyService()
+    else {
+      const exchangeRate = result / 10 ** 18;
+      const str = `1 ${getSymbol('from')} = ${exchangeRate} ${getSymbol('to')} `
+      $('.swap__rate').text(str)
+
+      $('.input-placeholder').text(amount * exchangeRate)
+    }
+  }, (error) => {
+    console.log(error)
+    denyService()
+  })
 
 }
 $(async function () {
@@ -58,27 +91,8 @@ $(async function () {
 
   // Handle on Source Amount Changed
   $('#swap-source-amount').on('input change', function () {
-    /* TODO: Fetching latest rate with new amount */
-    function denyService() {
-      $('.swap__rate').text("We can not swap that amount!")
-      $('.input-placeholder').text(0)
-    }
-    const amount = $(this).val()
-    showExchangeRate((amount * 10 ** 18).toString())
-      .then((result) => {
-        if (result == 0)
-          denyService()
-        else {
-          const exchangeRate = result / 10 ** 18;
-          const str = `1 ${$('#from-token').text()} = ${exchangeRate } ${$('#to-token').text()} `
-          $('.swap__rate').text(str)
-
-          $('.input-placeholder').text(amount * exchangeRate)
-        }
-      }, (error) => {
-        console.log(error)
-        denyService()
-      })
+    /* DONE: Fetching latest rate with new amount */  
+    showExchangeRate($(this).val())
   });
 
   // Handle on click token in Token Dropdown List
@@ -91,12 +105,14 @@ $(async function () {
       case 'dropdown__content__from': $('#from-token').text(text); break;
       case 'dropdown__content__to': $('#to-token').text(text); break;
     }
+    showExchangeRate(getSourceAmount())
   });
   $('.swap__icon').on('click', function () {
-    const from = $('#from-token').text();
-    const to = $('#to-token').text();
+    const from = getSymbol('from')
+    const to = getSymbol('to')
     $('#from-token').text(to);
     $('#to-token').text(from);
+    showExchangeRate(getSourceAmount())
 
   })
   // Handle on Swap Now button clicked
