@@ -80,8 +80,173 @@ const EnvConfig = {
       "type": "fallback"
     }
   ],
-  EXCHANGE_CONTRACT_ADDRESS: '0x4ab67F9769Cf3Ab3D0c28790A231EC50dd269516',
+  RESERVE_ABI: [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "name": "destAddress",
+          "type": "address"
+        }
+      ],
+      "name": "withdraw",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getBalance",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "isBuy",
+          "type": "bool"
+        },
+        {
+          "name": "srcAmount",
+          "type": "uint256"
+        }
+      ],
+      "name": "getExchangeRate",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getTokenBalance",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "name": "destAddress",
+          "type": "address"
+        }
+      ],
+      "name": "withdrawToken",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "thisAddr",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_buyRate",
+          "type": "uint256"
+        },
+        {
+          "name": "_sellRate",
+          "type": "uint256"
+        }
+      ],
+      "name": "setExchangeRates",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "isBuy",
+          "type": "bool"
+        },
+        {
+          "name": "srcAmount",
+          "type": "uint256"
+        },
+        {
+          "name": "from",
+          "type": "address"
+        }
+      ],
+      "name": "exchange",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "tokenAddr",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "payable": true,
+      "stateMutability": "payable",
+      "type": "fallback"
+    }
+  ],
+  EXCHANGE_CONTRACT_ADDRESS: '0x48418d0Ebd0F669885F8394Af4FcbE39a557d6bb',
   // EXCHANGE_CONTRACT_ADDRESS: '0xb25127b48aC2e0FF8ce98E149E964C984272A1e9',
+  
   SUPPORTTED_TOKENS: [{
     "name": 'tomo',
     "symbol": 'TOMO',
@@ -94,7 +259,8 @@ const EnvConfig = {
     "name": 'ether',
     "symbol": 'ETH',
     address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-  }]
+  }],
+  GAS_PRICE: 1000000000,
 };
-
+// tomo test network
 export default EnvConfig;

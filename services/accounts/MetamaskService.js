@@ -1,19 +1,18 @@
 export default class MetamaskService {
-  constructor(keystore) {
-    this.web3 = getWeb3Instance();
-    this.keystore = keystore;
+  constructor(web3) {
+    this.web3 = web3;
   }
 
   sendTransaction(tx) {
     // TODO: Sending signed transaction by Metamask
-    web3.eth.sendTransaction(tx)
-      .on('receipt', receipt => {
-        console.log(receipt);
-        // resolve(receipt);
-      })  
-      .on('error', (error) => {
-        // reject(error);
-        console.log(error)
-      });
+    return new Promise((resolve, reject) => {
+      this.web3.eth.sendTransaction(tx)
+        .on('receipt', receipt => {
+          resolve(receipt);
+        })  
+        .on('error', (error) => {
+          reject(error);
+        });
+    })
   }
 }

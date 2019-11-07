@@ -1,5 +1,6 @@
 import { getWeb3Instance, getTokenContract } from './services/web3Service';
-import { getExchangeRate, getETHBalance, getSwapMethod, generateTx, sendTransaction } from './services/networkService'
+import { getExchangeRate, getETHBalance, getSwapABI, generateTx, getApproveABI } from './services/networkService'
+import MetamaskService from './services/accounts/MetamaskService';
 import EnvConfig from "./configs/env";
 import handlebars from 'handlebars/dist/handlebars.min.js'
 
@@ -7,6 +8,7 @@ const candidateTemplate = handlebars.compile(document.getElementById('candidateT
 
 const tokens = EnvConfig.SUPPORTTED_TOKENS;
 const web3 = getWeb3Instance();
+const metamaskService = new MetamaskService(web3)
 let defaultAccount;
 
 web3.currentProvider.publicConfigStore.on('update', async (result) => {
@@ -39,9 +41,9 @@ function getTokenAddress(symbol) {
 }
 function showUserBalance(address) {
   const tokenSymbol = getSymbol('from')
-  if(tokenSymbol == 'ETH'){
+  if (tokenSymbol == 'ETH') {
     getETHBalance(address).then((result) => {
-      setUserBalance(result / 10**18)
+      setUserBalance(result / 10 ** 18)
     }, (error) => {
       setUserBalance('can not get your balance.')
       console.log(error)
@@ -51,14 +53,14 @@ function showUserBalance(address) {
   const from = getTokenAddress(tokenSymbol)
   const contract = getTokenContract(from)
   contract.methods.balanceOf(address).call().then((result) => {
-    setUserBalance(result / 10**18)
+    setUserBalance(result / 10 ** 18)
   }, (error) => {
     setUserBalance('can not get your balance.')
     console.log(error)
   })
 }
 function setUserBalance(amount) {
-  $('.userBalance').text(`Your balance: ${amount} ${getSymbol('from')}`)
+  $('.userBalance').text(`My balance: ${amount} ${getSymbol('from')}`)
 }
 function fetchTokenSymbol() {
   let candidates = document.getElementsByClassName('tokens');
@@ -81,10 +83,10 @@ function getSourceAmount() {
 }
 async function showExchangeRate(amount) {
   function denyService(message) {
-    message?$('.swap__rate').text(message) : $('.swap__rate').text("We can not swap that amount!")
+    message ? $('.swap__rate').text(message) : $('.swap__rate').text("We can not swap that amount!")
     $('.input-placeholder').text(0)
   }
-  if(getSymbol('from') == getSymbol('to')) {
+  if (getSymbol('from') == getSymbol('to')) {
     denyService("Please choose a different destination token. ")
     return;
   }
@@ -92,31 +94,88 @@ async function showExchangeRate(amount) {
   /**
    * assuming that reserve contract always reserve at least 1 token
    */
-  if(amount == -1 || amount == 0) {
+  if (amount == -1 || amount == 0) {
     isInitial = true
     amount = 1
-  } 
+  }
   // get token address
   const from = getTokenAddress(getSymbol('from'))
   const to = getTokenAddress(getSymbol('to'))
   // get amount
   getExchangeRate(from, to, (amount * 10 ** 18).toString())
-  .then((result) => {
-    if (result == 0)
+    .then((result) => {
+      if (result == 0)
+        denyService()
+      else {
+        const exchangeRate = result / 10 ** 18;
+        const str = `1 ${getSymbol('from')} = ${exchangeRate} ${getSymbol('to')} `
+        $('.swap__rate').text(str)
+        if (isInitial)
+          $('.input-placeholder').text(0)
+        else
+          $('.input-placeholder').text(amount * exchangeRate)
+      }
+    }, (error) => {
+      console.log(error)
       denyService()
-    else {
-      const exchangeRate = result / 10 ** 18;
-      const str = `1 ${getSymbol('from')} = ${exchangeRate} ${getSymbol('to')} `
-      $('.swap__rate').text(str)
-      if(isInitial)
-        $('.input-placeholder').text(0)
-      else 
-        $('.input-placeholder').text(amount * exchangeRate)
-    }
-  }, (error) => {
-    console.log(error)
-    denyService()
-  })
+    })
+}
+function informUser(message) {
+  $('.modal__content').text(message)
+}
+function processTx(srcSymbol, destSymbol, srcAmount, from) {
+  // if srcTokenAddress == token
+  const amount = srcAmount * 10 ** 18
+  if (srcSymbol == 'ETH') {
+    /// gen exchange tx (add value)-> send -> confirm
+    const tx = {
+      from,
+      to: EnvConfig.EXCHANGE_CONTRACT_ADDRESS,
+      gasPrice: EnvConfig.GAS_PRICE,
+      value: amount,
+      data: getSwapABI(getTokenAddress(srcSymbol), getTokenAddress(destSymbol), amount.toString())
+    };
+    informUser('Processing...')
+    metamaskService.sendTransaction(tx).then((result) => {
+      console.log(result)
+      informUser('Success!')
+    }, (e) => {
+      console.log(e)
+      informUser('Fail!')
+    })
+  }
+  else {
+    /// generate approve tx -> send -> confirm -> gen exchange tx -> confirm
+    const to = getTokenAddress(srcSymbol)
+    let tx = {
+      from,
+      to,
+      gasPrice: EnvConfig.GAS_PRICE,
+      data: getApproveABI(to, amount.toString())
+    };
+    metamaskService.sendTransaction(tx).then((result) => {
+      console.log(result)
+      informUser('Successful Approval! Please confirm this transaction to exchange.')
+      tx = {
+        from,
+        to: EnvConfig.EXCHANGE_CONTRACT_ADDRESS,
+        gasPrice: EnvConfig.GAS_PRICE,
+        data: getSwapABI(getTokenAddress(srcSymbol), getTokenAddress(destSymbol), amount.toString())
+      };
+      console.log(tx)
+      metamaskService.sendTransaction(tx).then((result) => {
+        console.log(result)
+        informUser('Success!')
+      }, (e) => {
+        console.log(e)
+        informUser('Fail!')
+      })
+    }, (e) => {
+      console.log(e)
+      informUser('Please approve again!')
+    })
+  }
+
 }
 $(async function () {
   fetchTokenSymbol()
@@ -131,7 +190,7 @@ $(async function () {
 
   // Handle on Source Amount Changed
   $('#swap-source-amount').on('input change', function () {
-    /* DONE: Fetching latest rate with new amount */  
+    /* DONE: Fetching latest rate with new amount */
     showExchangeRate($(this).val())
   });
 
@@ -142,8 +201,8 @@ $(async function () {
     const text = $(this).text();
 
     switch ($(this).parents(".dropdown__content").attr('id')) {
-      case 'dropdown__content__from': 
-        $('#from-token').text(text); 
+      case 'dropdown__content__from':
+        $('#from-token').text(text);
         showUserBalance(defaultAccount)
         break;
       case 'dropdown__content__to': $('#to-token').text(text); break;
@@ -163,19 +222,7 @@ $(async function () {
   $('#swap-button').on('click', async function () {
     const modalId = $(this).data('modal-id');
     $(`#${modalId}`).addClass('modal--active');
-    const data = getSwapMethod(getTokenAddress(getSymbol('from')), getTokenAddress(getSymbol('to')), 1).encodeABI()
-    var tx = {
-      from: defaultAccount,
-      to: '0x4ab67F9769Cf3Ab3D0c28790A231EC50dd269516',
-      value:1000000,
-      gas: 6000,
-      gasPrice: 10000,
-      data
-  };
-    // data.estimateGas()
-    // const tx = await generateTx(data, defaultAccount);
-    // console.log(tx)
-    sendTransaction(tx)
+    processTx(getSymbol('from'), getSymbol('to'), getSourceAmount(), defaultAccount)
   });
 
   // Tab Processing
