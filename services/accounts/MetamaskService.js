@@ -4,7 +4,16 @@ export default class MetamaskService {
     this.keystore = keystore;
   }
 
-  sendTransaction(txObject) {
+  sendTransaction(tx) {
     // TODO: Sending signed transaction by Metamask
+    web3.eth.sendTransaction(tx)
+      .on('receipt', receipt => {
+        console.log(receipt);
+        // resolve(receipt);
+      })  
+      .on('error', (error) => {
+        // reject(error);
+        console.log(error)
+      });
   }
 }

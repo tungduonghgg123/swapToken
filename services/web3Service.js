@@ -3,7 +3,6 @@ import EnvConfig from "../configs/env";
 
 export function getWeb3Instance() {
   if (window.web3) {
-    console.log('meta mask provider')
     return new Web3(window.web3.currentProvider);
   }
 
