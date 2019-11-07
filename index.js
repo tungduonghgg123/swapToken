@@ -10,7 +10,8 @@ const tokens = EnvConfig.SUPPORTTED_TOKENS;
 const web3 = getWeb3Instance();
 const metamaskService = new MetamaskService(web3)
 let defaultAccount;
-
+let balance = 0;
+let swapDisabled = false
 web3.currentProvider.publicConfigStore.on('update', async (result) => {
   //update exchange rate
   //update user balance
@@ -45,7 +46,7 @@ function showUserBalance(address) {
     getETHBalance(address).then((result) => {
       setUserBalance(result / 10 ** 18)
     }, (error) => {
-      setUserBalance('can not get your balance.')
+      setUserBalance(-1)
       console.log(error)
     })
     return;
@@ -55,11 +56,17 @@ function showUserBalance(address) {
   contract.methods.balanceOf(address).call().then((result) => {
     setUserBalance(result / 10 ** 18)
   }, (error) => {
-    setUserBalance('can not get your balance.')
+    setUserBalance(-1)
     console.log(error)
   })
 }
 function setUserBalance(amount) {
+  if(amount == -1) {
+    balance = 0;
+    $('.userBalance').text('can not get your balance.')
+    return
+  }
+  balance = amount
   $('.userBalance').text(`My balance: ${amount} ${getSymbol('from')}`)
 }
 function fetchTokenSymbol() {
@@ -85,16 +92,24 @@ async function showExchangeRate(amount) {
   function denyService(message) {
     message ? $('.swap__rate').text(message) : $('.swap__rate').text("We can not swap that amount!")
     $('.input-placeholder').text(0)
+    swapDisabled = true;
   }
   if (getSymbol('from') == getSymbol('to')) {
     denyService("Please choose a different destination token. ")
     return;
   }
+  if(amount > balance) {
+    denyService(" You are not permited to swap that amount")
+    return;
+  }
+  swapDisabled = false
   let isInitial = false
+  swapDisabled = false
   /**
    * assuming that reserve contract always reserve at least 1 token
    */
   if (amount == -1 || amount == 0) {
+    swapDisabled = true
     isInitial = true
     amount = 1
   }
@@ -126,6 +141,7 @@ function informUser(message) {
 function processTx(srcSymbol, destSymbol, srcAmount, from) {
   // if srcTokenAddress == token
   const amount = srcAmount * 10 ** 18
+  informUser('Processing...')
   if (srcSymbol == 'ETH') {
     /// gen exchange tx (add value)-> send -> confirm
     const tx = {
@@ -135,7 +151,6 @@ function processTx(srcSymbol, destSymbol, srcAmount, from) {
       value: amount,
       data: getSwapABI(getTokenAddress(srcSymbol), getTokenAddress(destSymbol), amount.toString())
     };
-    informUser('Processing...')
     metamaskService.sendTransaction(tx).then((result) => {
       console.log(result)
       informUser('Success!')
@@ -222,6 +237,10 @@ $(async function () {
   $('#swap-button').on('click', async function () {
     const modalId = $(this).data('modal-id');
     $(`#${modalId}`).addClass('modal--active');
+        if(swapDisabled) {
+          informUser('You are not allowed to do that!')
+          return;
+        }
     processTx(getSymbol('from'), getSymbol('to'), getSourceAmount(), defaultAccount)
   });
 

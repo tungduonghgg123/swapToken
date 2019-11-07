@@ -15,9 +15,6 @@ contract Exchange {
         
         owner = msg.sender;
         reserved[nativeToken] = true;
-        addReserve(0x0DCd2F752394c41875e259e00bb44fd505297caF, 0x692a70D2e424a56D2C6C27aA97D1a86395877b3A);
-        addReserve(0x5E72914535f202659083Db3a02C984188Fa26e9f, 0xbBF289D846208c16EDc8474705C748aff07732dB);
-
     }
     function addReserve(address _reserve, address token) isOwner public {
         
