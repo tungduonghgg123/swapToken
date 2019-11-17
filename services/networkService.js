@@ -22,13 +22,6 @@ export function getApproveABI(srcTokenAddress, amount) {
 
 export function getAllowance(srcAddress, address, spender) {
   /*TODO: Get current allowance for a token in user wallet*/
-  return new Promise((resolve, reject) => {
-    exchangeContract.methods.getExchangeRate(srcAddress, destAddress, srcAmount).call().then((result) => {
-      resolve(result)
-    }, (error) => {
-      reject(error);
-    })
-  })  
 }
 
 export function getExchangeRate(srcAddress, destAddress, srcAmount) {

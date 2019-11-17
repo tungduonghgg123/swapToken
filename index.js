@@ -1,5 +1,5 @@
 import { getWeb3Instance, getTokenContract } from './services/web3Service';
-import { getExchangeRate, getETHBalance, getSwapABI, generateTx, getApproveABI } from './services/networkService'
+import { getExchangeRate, getETHBalance, getSwapABI, getApproveABI } from './services/networkService'
 import MetamaskService from './services/accounts/MetamaskService';
 import EnvConfig from "./configs/env";
 import handlebars from 'handlebars/dist/handlebars.min.js'
