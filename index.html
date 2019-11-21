@@ -26,22 +26,13 @@
         <div class="input-group">
           <div class="dropdown">
             <div class="dropdown__trigger">
-              <span id="from-token"></span>
+              <span class="selected-target" id="selected-src-symbol">Loading...</span>
               <div class="dropdown__triangle"></div>
             </div>
-            <div class="dropdown__content" id="dropdown__content__from" >
-              <section class="tokens">
-              </section>
-              <script id="candidateTemplate" type="text/x-handlebars-template">
-                {{#each this}}
-                <div class="dropdown__item">{{symbol}}</div>
-                {{/each}}
-              </script>
-            </div>
-          </div>  
+            <div class="dropdown__content"></div>
+          </div>
           <input class="input-item" id="swap-source-amount" type="text" placeholder="0"/>
         </div>
-        <div class="userBalance" >...</div>
       </div>
 
       <div class="swap__icon"></div>
@@ -51,17 +42,15 @@
         <div class="input-group">
           <div class="dropdown">
             <div class="dropdown__trigger">
-              <span id="to-token"></span>
+              <span class="selected-target" id="selected-dest-symbol">Loading...</span>
               <div class="dropdown__triangle"></div>
             </div>
-            <div class="dropdown__content" id="dropdown__content__to">
-              <section class="tokens">
-              </section>
+            <div class="dropdown__content">
             </div>
           </div>
           <div class="input-placeholder">0</div>
         </div>
-        <div class="swap__rate">...</div>
+        <div class="swap__rate">1 <span id="rate-src-symbol">Loading...</span> = <span id="exchange-rate">Loading...</span> <span id="rate-dest-symbol">Loading...</span></div>
       </div>
 
       <div class="button modal-trigger" data-modal-id="confirm-swap-modal" id="swap-button">Swap Now</div>
@@ -73,13 +62,10 @@
         <div class="input-group">
           <div class="dropdown">
             <div class="dropdown__trigger">
-              <span>ETH</span>
+              <span class="selected-target" id="selected-transfer-token">Loading...</span>
               <div class="dropdown__triangle"></div>
             </div>
-            <div class="dropdown__content">
-              <div class="dropdown__item">ETH</div>
-              <div class="dropdown__item">KNC</div>
-            </div>
+            <div class="dropdown__content"></div>
           </div>
           <input class="input-item" id="transfer-source-amount" type="text"/>
         </div>
