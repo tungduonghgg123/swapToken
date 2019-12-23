@@ -1,3 +1,4 @@
+import $ from 'jquery'
 import { getWeb3Instance, getTokenContract } from './services/web3Service';
 import { getExchangeRate, getETHBalance, getSwapABI, getApproveABI } from './services/networkService'
 import MetamaskService from './services/accounts/MetamaskService';
@@ -5,11 +6,10 @@ import EnvConfig from "./configs/env";
 import handlebars from 'handlebars/dist/handlebars.min.js'
 
 const candidateTemplate = handlebars.compile(document.getElementById('candidateTemplate').innerHTML)
-
 const tokens = EnvConfig.SUPPORTTED_TOKENS;
 const web3 = getWeb3Instance();
 const metamaskService = new MetamaskService(web3)
-let defaultAccount;
+let defaultAccount; 
 let balance = 0;
 let swapDisabled = false
 web3.currentProvider.publicConfigStore.on('update', async (result) => {
@@ -38,10 +38,16 @@ function fetchingAccount() {
 }
 
 function getTokenAddress(symbol) {
+  if(!symbol)
+    return;
   return tokens.find(token => token.symbol == symbol).address
 }
 function showUserBalance(address) {
+  if(!address)
+    return;
   const tokenSymbol = getSymbol('from')
+  if(!tokenSymbol)
+    return;
   if (tokenSymbol == 'ETH') {
     getETHBalance(address).then((result) => {
       setUserBalance(result / 10 ** 18)
@@ -74,6 +80,7 @@ function fetchTokenSymbol() {
   Array.prototype.forEach.call(candidates, function (element) {
     element.innerHTML = candidateTemplate(tokens)
   });
+  // $('#from-token').text(tokens[0].symbol);
   $('#from-token').text(tokens[0].symbol);
   $('#to-token').text(tokens[1].symbol);
 }
@@ -235,6 +242,7 @@ $(async function () {
   })
   // Handle on Swap Now button clicked
   $('#swap-button').on('click', async function () {
+    console.log('clicked')
     const modalId = $(this).data('modal-id');
     $(`#${modalId}`).addClass('modal--active');
         if(swapDisabled) {
