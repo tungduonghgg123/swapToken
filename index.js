@@ -1,32 +1,30 @@
 import $ from 'jquery'
 import {
-  initiateProject, fetchingAccount, getTokenAddress, getSymbol, setUserBalance, showUserBalance,
+  initiateProject, fetchingAccount, getSymbol, showUserBalance,
   getSourceAmount, showExchangeRate, swapButtonDisabled, informUser, getDefaultAccount, processTx, 
 } from './helper/'
 
 
 $(async function () {
+  
   initiateProject()
-  // fetchTokenSymbol()
   await showExchangeRate(-1)
   fetchingAccount()
+
   // Import Metamask
   $('#import-metamask').on('click', function () {
-    /* DONE: Importing wallet by Metamask goes here. */
     let ethereum = window.ethereum;
     ethereum.enable();
   });
 
   // Handle on Source Amount Changed
   $('#swap-source-amount').on('input change', function () {
-    /* DONE: Fetching latest rate with new amount */
     showExchangeRate($(this).val())
   });
 
   // Handle on click token in Token Dropdown List
   $('.dropdown__item').on('click', function () {
     $(this).parents('.dropdown').removeClass('dropdown--active');
-    /* DONE: Select Token logic goes here */
     const text = $(this).text();
 
     switch ($(this).parents(".dropdown__content").attr('id')) {
@@ -82,5 +80,10 @@ $(async function () {
   $('.modal').on('click', function (e) {
     if (e.target !== this) return;
     $(this).removeClass('modal--active');
+  });
+  $('#transfer-button').on('click', async function () {
+    const modalId = $(this).data('modal-id');
+    $(`#${modalId}`).addClass('modal--active');
+    informUser('Future Feature')
   });
 });

@@ -1,21 +1,25 @@
 import { getWeb3Instance, getTokenContract } from '../services/web3Service';
 import { getExchangeRate, getETHBalance, getSwapABI, getApproveABI } from '../services/networkService'
 import MetamaskService from '../services/accounts/MetamaskService';
-import { showUserBalance, getSymbol, getTokenAddress, informUser} from './index'
+import { showUserBalance, getSymbol, getTokenAddress, informUser } from './index'
 import EnvConfig from "../configs/env";
 
 let defaultAccount;
 const web3 = getWeb3Instance();
 const metamaskService = new MetamaskService(web3)
-web3.currentProvider.publicConfigStore.on('update', async (result) => {
-    //update exchange rate
-    //update user balance
 
-    // showExchangeRate(getSourceAmount());
-    defaultAccount = result.selectedAddress;
-    showUserBalance(defaultAccount);
+try {
+    web3.currentProvider.publicConfigStore.on('update', async (result) => {
+        defaultAccount = result.selectedAddress;
+        showUserBalance(defaultAccount);
 
-});
+    });
+} catch (e) {
+    showUserBalance()
+    console.log(e)
+    console.log('there is something wrong with web3 provider')
+}
+
 export function fetchingAccount() {
     web3.eth.getAccounts(function (err, accounts) {
         if (err != null) {
@@ -26,7 +30,6 @@ export function fetchingAccount() {
         }
         else {
             defaultAccount = accounts[0]
-            // showUserBalance(defaultAccount)
         }
     });
 }

@@ -1,5 +1,5 @@
 import { getExchangeRate } from "../services/networkService";
-import { getWeb3Instance, getTokenContract } from '../services/web3Service';
+import { getTokenContract } from '../services/web3Service';
 import EnvConfig from "../configs/env";
 import $ from 'jquery'
 
@@ -7,13 +7,12 @@ const tokens = EnvConfig.TOKENS;
 let balance = 0;
 let swapDisabled = false
 
-export function initiateProject() {
+function initiateProject() {
     const defaultSrcSymbol = tokens[0].symbol;
     const defaultDestSymbol = tokens[1].symbol;
 
     initiateDropdown();
     initiateSelectedToken(defaultSrcSymbol, defaultDestSymbol);
-    // initiateDefaultRate(defaultSrcSymbol, defaultDestSymbol);
 }
 
 function initiateDropdown() {
@@ -29,24 +28,8 @@ function initiateDropdown() {
 function initiateSelectedToken(srcSymbol, destSymbol) {
     $('#selected-src-symbol').html(srcSymbol);
     $('#selected-dest-symbol').html(destSymbol);
-    $('#rate-src-symbol').html(srcSymbol);
-    $('#rate-dest-symbol').html(destSymbol);
     $('#selected-transfer-token').html(srcSymbol);
 }
-
-// function initiateDefaultRate(srcSymbol, destSymbol) {
-//     const srcToken = getTokenAddress(srcSymbol);
-//     const destToken = getTokenAddress(destSymbol);
-//     const defaultSrcAmount = (Math.pow(10, 18)).toString();
-
-//     getExchangeRate(srcToken.address, destToken.address, defaultSrcAmount).then((result) => {
-//         const rate = result / Math.pow(10, 18);
-//         $('#exchange-rate').html(rate);
-//     }).catch((error) => {
-//         console.log(error);
-//         $('#exchange-rate').html(0);
-//     });
-// }
 
 function getTokenAddress(symbol) {
     if (!symbol)
@@ -61,6 +44,9 @@ function getSymbol(source) {
             return $('#selected-src-symbol').text();
     }
 }
+function getSourceAmount() {
+    return $('#swap-source-amount').val();
+}
 function setUserBalance(amount) {
     if (amount == -1) {
         balance = 0;
@@ -71,8 +57,11 @@ function setUserBalance(amount) {
     $('.userBalance').text(`My balance: ${amount} ${getSymbol('from')}`)
 }
 function showUserBalance(address) {
-    if (!address)
+    if (!address) {
+        setUserBalance(-1)
         return;
+    }
+
     const tokenSymbol = getSymbol('from')
     if (!tokenSymbol)
         return;
@@ -94,22 +83,18 @@ function showUserBalance(address) {
         console.log(error)
     })
 }
-function getSourceAmount() {
-    return $('#swap-source-amount').val();
-}
-function informUser(message) {
-    $('.modal__content').text(message)
-}
 async function showExchangeRate(amount) {
     function denyService(message) {
         message ? $('.swap__rate').text(message) : $('.swap__rate').text("We can not swap that amount!")
         $('.input-placeholder').text(0)
         swapDisabled = true;
     }
+
     if (getSymbol('from') == getSymbol('to')) {
         denyService("Please choose a different destination token. ")
         return;
     }
+
     if (amount > balance) {
         denyService(" You are not permited to swap that amount")
         return;
@@ -118,7 +103,7 @@ async function showExchangeRate(amount) {
     let isInitial = false
     swapDisabled = false
     /**
-     * assuming that reserve contract always reserve at least 1 token
+     * assuming that Reserve contract always reserve at least 1 token
      */
     if (amount == -1 || amount == 0) {
         swapDisabled = true
@@ -147,10 +132,15 @@ async function showExchangeRate(amount) {
             denyService()
         })
 }
-export function swapButtonDisabled() {
+function swapButtonDisabled() {
     return swapDisabled
 }
+function informUser(message) {
+    $('.modal__content').text(message)
+}
 export {
+    swapButtonDisabled,
+    initiateProject,
     getTokenAddress,
     getSymbol,
     setUserBalance,
