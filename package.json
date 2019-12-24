@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "handlebars": "^4.5.1",
     "jquery": "^3.4.1",
     "regenerator-runtime": "^0.13.3",
     "web3": "^1.2.1"
