@@ -49,7 +49,7 @@ function processTx(srcSymbol, destSymbol, srcAmount, from) {
         };
         metamaskService.sendTransaction(tx).then((result) => {
             console.log(result)
-            informUser('Success!')
+            informUser('Success, it may takes time for your balance to change, be patient!')
         }, (e) => {
             console.log(e)
             informUser('Fail!')
@@ -76,7 +76,7 @@ function processTx(srcSymbol, destSymbol, srcAmount, from) {
             console.log(tx)
             metamaskService.sendTransaction(tx).then((result) => {
                 console.log(result)
-                informUser('Success!')
+                informUser('Success, it may takes time for your balance to change, be patient!')
             }, (e) => {
                 console.log(e)
                 informUser('Fail!')
