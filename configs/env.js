@@ -245,7 +245,7 @@ const EnvConfig = {
     }
   ],
   EXCHANGE_CONTRACT_ADDRESS: '0xdcfC77Ed181B1Cfd98421b9579595d785333a076',  
-  SUPPORTTED_TOKENS: [{
+  TOKENS: [{
     "name": 'tomo',
     "symbol": 'TOMO',
     address: '0x40aF51aFaa2967DE5E9872f77647A6C205ED4850',

@@ -1,7 +1,7 @@
 import { getWeb3Instance, getTokenContract, getExchangeContract, getReserveContract, getCalleeContract } from './web3Service';
 import EnvConfig from "../configs/env";
 const web3 = getWeb3Instance()
-const tokens = EnvConfig.SUPPORTTED_TOKENS;
+const tokens = EnvConfig.TOKENS;
 const token2contract = new Map();
 tokens.forEach(({ address }) => {
   token2contract.set(address, getTokenContract(address));

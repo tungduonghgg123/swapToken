@@ -5,6 +5,7 @@ require("regenerator-runtime/runtime");
 const path = require('path');
 
 module.exports = {
+    devtool: 'eval-source-map',
     // babel-polyfill for using async feature.
     entry: ['babel-polyfill', './index.js'],
     output: {

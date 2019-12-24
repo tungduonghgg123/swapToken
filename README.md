@@ -1,5 +1,5 @@
-# swapToken
-this repository resides in testing for a course which is provided by Funix
+# swapToken - MVP version
+I created this repository for testing purpose for a course which is provided by Funix. 
 
 # The way I defined the exchange rates in Reserve contract maybe not usual:
 Exchange rate consists of buy rate and sell rate. Let's say we want to trade from token A -> token B.
@@ -8,3 +8,9 @@ Exchange rate consists of buy rate and sell rate. Let's say we want to trade fro
 ## For example, if you input to setExchangeRates(4,5) => buyRate = 4 and sellRate = 5. As a result:
 + Buy procedure: 4 Token A = 1 token B
 + Sell procedure: 1 token A = 5 token B
+# Supportted Features:
++ Connect with MATAMASK
++ Trading between tokens
++ Tested on Chrome
++ Asked permission everytime when trading tokens 
+

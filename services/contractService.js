@@ -3,7 +3,7 @@ import EnvConfig from "../configs/env";
 
 const web3 = getWeb3Instance();
 const TOMO = getTokenContract(EnvConfig.TOMO_TOKEN_ADDRESS);
-const tokens = EnvConfig.SUPPORTTED_TOKENS;
+const tokens = EnvConfig.TOKENS;
 
 // web3.eth.sendTransaction({
 //   to: '0x11f4d0A3c12e86B4b5F39B213F7E19D048276DAe',

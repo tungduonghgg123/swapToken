@@ -1,206 +1,13 @@
 import $ from 'jquery'
-import { getWeb3Instance, getTokenContract } from './services/web3Service';
-import { getExchangeRate, getETHBalance, getSwapABI, getApproveABI } from './services/networkService'
-import MetamaskService from './services/accounts/MetamaskService';
-import EnvConfig from "./configs/env";
-import handlebars from 'handlebars/dist/handlebars.min.js'
+import {
+  initiateProject, fetchingAccount, getTokenAddress, getSymbol, setUserBalance, showUserBalance,
+  getSourceAmount, showExchangeRate, swapButtonDisabled, informUser, getDefaultAccount, processTx, 
+} from './helper/'
 
-const candidateTemplate = handlebars.compile(document.getElementById('candidateTemplate').innerHTML)
-const tokens = EnvConfig.SUPPORTTED_TOKENS;
-const web3 = getWeb3Instance();
-const metamaskService = new MetamaskService(web3)
-let defaultAccount; 
-let balance = 0;
-let swapDisabled = false
-web3.currentProvider.publicConfigStore.on('update', async (result) => {
-  //update exchange rate
-  //update user balance
 
-  // showExchangeRate(getSourceAmount());
-  defaultAccount = result.selectedAddress;
-  showUserBalance(defaultAccount);
-
-});
-function fetchingAccount() {
-  web3.eth.getAccounts(function (err, accounts) {
-    if (err != null) {
-      console.log(err)
-    }
-    else if (accounts.length === 0) {
-      console.log('MetaMask is locked')
-    }
-    else {
-      defaultAccount = accounts[0]
-      showUserBalance(defaultAccount)
-      console.log('MetaMask is unlocked')
-    }
-  });
-}
-
-function getTokenAddress(symbol) {
-  if(!symbol)
-    return;
-  return tokens.find(token => token.symbol == symbol).address
-}
-function showUserBalance(address) {
-  if(!address)
-    return;
-  const tokenSymbol = getSymbol('from')
-  if(!tokenSymbol)
-    return;
-  if (tokenSymbol == 'ETH') {
-    getETHBalance(address).then((result) => {
-      setUserBalance(result / 10 ** 18)
-    }, (error) => {
-      setUserBalance(-1)
-      console.log(error)
-    })
-    return;
-  }
-  const from = getTokenAddress(tokenSymbol)
-  const contract = getTokenContract(from)
-  contract.methods.balanceOf(address).call().then((result) => {
-    setUserBalance(result / 10 ** 18)
-  }, (error) => {
-    setUserBalance(-1)
-    console.log(error)
-  })
-}
-function setUserBalance(amount) {
-  if(amount == -1) {
-    balance = 0;
-    $('.userBalance').text('can not get your balance.')
-    return
-  }
-  balance = amount
-  $('.userBalance').text(`My balance: ${amount} ${getSymbol('from')}`)
-}
-function fetchTokenSymbol() {
-  let candidates = document.getElementsByClassName('tokens');
-  Array.prototype.forEach.call(candidates, function (element) {
-    element.innerHTML = candidateTemplate(tokens)
-  });
-  // $('#from-token').text(tokens[0].symbol);
-  $('#from-token').text(tokens[0].symbol);
-  $('#to-token').text(tokens[1].symbol);
-}
-function getSymbol(source) {
-  switch (source) {
-    case 'to':
-      return $('#to-token').text();
-    case 'from':
-      return $('#from-token').text();
-  }
-}
-function getSourceAmount() {
-  return $('#swap-source-amount').val();
-}
-async function showExchangeRate(amount) {
-  function denyService(message) {
-    message ? $('.swap__rate').text(message) : $('.swap__rate').text("We can not swap that amount!")
-    $('.input-placeholder').text(0)
-    swapDisabled = true;
-  }
-  if (getSymbol('from') == getSymbol('to')) {
-    denyService("Please choose a different destination token. ")
-    return;
-  }
-  if(amount > balance) {
-    denyService(" You are not permited to swap that amount")
-    return;
-  }
-  swapDisabled = false
-  let isInitial = false
-  swapDisabled = false
-  /**
-   * assuming that reserve contract always reserve at least 1 token
-   */
-  if (amount == -1 || amount == 0) {
-    swapDisabled = true
-    isInitial = true
-    amount = 1
-  }
-  // get token address
-  const from = getTokenAddress(getSymbol('from'))
-  const to = getTokenAddress(getSymbol('to'))
-  // get amount
-  getExchangeRate(from, to, (amount * 10 ** 18).toString())
-    .then((result) => {
-      if (result == 0)
-        denyService()
-      else {
-        const exchangeRate = result / 10 ** 18;
-        const str = `1 ${getSymbol('from')} = ${exchangeRate} ${getSymbol('to')} `
-        $('.swap__rate').text(str)
-        if (isInitial)
-          $('.input-placeholder').text(0)
-        else
-          $('.input-placeholder').text(amount * exchangeRate)
-      }
-    }, (error) => {
-      console.log(error)
-      denyService()
-    })
-}
-function informUser(message) {
-  $('.modal__content').text(message)
-}
-function processTx(srcSymbol, destSymbol, srcAmount, from) {
-  // if srcTokenAddress == token
-  const amount = srcAmount * 10 ** 18
-  informUser('Processing...')
-  if (srcSymbol == 'ETH') {
-    /// gen exchange tx (add value)-> send -> confirm
-    const tx = {
-      from,
-      to: EnvConfig.EXCHANGE_CONTRACT_ADDRESS,
-      gasPrice: EnvConfig.GAS_PRICE,
-      value: amount,
-      data: getSwapABI(getTokenAddress(srcSymbol), getTokenAddress(destSymbol), amount.toString())
-    };
-    metamaskService.sendTransaction(tx).then((result) => {
-      console.log(result)
-      informUser('Success!')
-    }, (e) => {
-      console.log(e)
-      informUser('Fail!')
-    })
-  }
-  else {
-    /// generate approve tx -> send -> confirm -> gen exchange tx -> confirm
-    const to = getTokenAddress(srcSymbol)
-    let tx = {
-      from,
-      to,
-      gasPrice: EnvConfig.GAS_PRICE,
-      data: getApproveABI(to, amount.toString())
-    };
-    metamaskService.sendTransaction(tx).then((result) => {
-      console.log(result)
-      informUser('Successful Approval! Please confirm this transaction to exchange.')
-      tx = {
-        from,
-        to: EnvConfig.EXCHANGE_CONTRACT_ADDRESS,
-        gasPrice: EnvConfig.GAS_PRICE,
-        data: getSwapABI(getTokenAddress(srcSymbol), getTokenAddress(destSymbol), amount.toString())
-      };
-      console.log(tx)
-      metamaskService.sendTransaction(tx).then((result) => {
-        console.log(result)
-        informUser('Success!')
-      }, (e) => {
-        console.log(e)
-        informUser('Fail!')
-      })
-    }, (e) => {
-      console.log(e)
-      informUser('Please approve again!')
-    })
-  }
-
-}
 $(async function () {
-  fetchTokenSymbol()
+  initiateProject()
+  // fetchTokenSymbol()
   await showExchangeRate(-1)
   fetchingAccount()
   // Import Metamask
@@ -224,32 +31,31 @@ $(async function () {
 
     switch ($(this).parents(".dropdown__content").attr('id')) {
       case 'dropdown__content__from':
-        $('#from-token').text(text);
-        showUserBalance(defaultAccount)
+        $('#selected-src-symbol').text(text);
+        showUserBalance(getDefaultAccount())
         break;
-      case 'dropdown__content__to': $('#to-token').text(text); break;
+      case 'dropdown__content__to': $('#selected-dest-symbol').text(text); break;
     }
     showExchangeRate(getSourceAmount())
   });
   $('.swap__icon').on('click', function () {
     const from = getSymbol('from')
     const to = getSymbol('to')
-    $('#from-token').text(to);
-    $('#to-token').text(from);
+    $('#selected-src-symbol').text(to);
+    $('#selected-dest-symbol').text(from);
     showExchangeRate(getSourceAmount())
-    showUserBalance(defaultAccount)
+    showUserBalance(getDefaultAccount())
 
   })
   // Handle on Swap Now button clicked
   $('#swap-button').on('click', async function () {
-    console.log('clicked')
     const modalId = $(this).data('modal-id');
     $(`#${modalId}`).addClass('modal--active');
-        if(swapDisabled) {
-          informUser('You are not allowed to do that!')
-          return;
-        }
-    processTx(getSymbol('from'), getSymbol('to'), getSourceAmount(), defaultAccount)
+    if (swapButtonDisabled()) {
+      informUser('You are not allowed to do that!')
+      return;
+    }
+    processTx(getSymbol('from'), getSymbol('to'), getSourceAmount(), getDefaultAccount())
   });
 
   // Tab Processing
