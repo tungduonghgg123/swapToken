@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "regenerator-runtime": "^0.13.3",
     "web3": "^1.2.1"
   },
